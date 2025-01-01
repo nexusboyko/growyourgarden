@@ -1,9 +1,11 @@
 import React from 'react';
+import { FlowerGoal, GardenTileType } from './types';
 
 const GardenTile = ({
   id,
   position,
-  icon,
+  goal,
+  type,
 
   dragElementRef,
   handleTileDrag,
@@ -18,7 +20,8 @@ const GardenTile = ({
 }: {
   id?: string;
   position: [number, number];
-  icon: string | null;
+  goal: FlowerGoal | null;
+  type: GardenTileType | null;
   
   dragElementRef: React.RefObject<HTMLDivElement>;
   handleTileDrag: (e: React.DragEvent<HTMLDivElement>) => void;
@@ -55,8 +58,8 @@ const GardenTile = ({
       key={id}
       id={id}
       
-      className={`select-none text-black font-bold aspect-square rounded-md
-        ${icon ? 'hover:cursor-grab bg-green-500' : 'hover:cursor-pointer bg-slate-600/50'} 
+      className={`select-none text-black font-bold aspect-square rounded-sm
+        ${type?.icon ? 'hover:cursor-grab bg-green-500' : 'hover:cursor-pointer bg-slate-600/50'} 
         flex items-center justify-center tile h-full w-full`}
 
       style={{
@@ -64,7 +67,7 @@ const GardenTile = ({
       }}
 
       ref={dragElementRef}
-      draggable={icon ? true : false}
+      draggable={type?.icon ? true : false}
       onDrag={(e) => handleTileDrag(e)}
       onDragStart={(e) => handleTileDragStart(e, x, y)}
       onDragOver={(e) => handleTileDragOver(e, x, y)}
@@ -74,8 +77,10 @@ const GardenTile = ({
       onDragLeave={(e) => handleTileDragLeave(e)}
       onClick={() => onClick?.(x, y)}
     >
-      {/* No icon = ground (empty) tile */}
-      {icon ?? ''}
+      {/* No type?.icon = ground (empty) tile */}
+      {type?.icon === null ? '' : (
+          goal?.currentStage == 0 ? '🌰' : goal?.currentStage === 1 ? '🌱' : type?.icon
+      )}
     </div>
   );
 };
