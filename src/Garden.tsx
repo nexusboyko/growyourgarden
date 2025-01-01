@@ -1,11 +1,12 @@
 import React from 'react'
-import { FlowerGoal, GardenTileMapping, GardenTileType, GRID_SIZE } from './types'
+import { FlowerGoal, GardenTilePositions, GardenTileType, GardenTileTypes, Goals, GRID_SIZE } from './types'
 import GardenTile from './GardenTile'
 
-const Garden = ({tileMapping}: {tileMapping: GardenTileMapping}) => {
+const Garden = ({tileMapping}: {tileMapping: GardenTilePositions}) => {
   // TODO: Move elsewhere + save goal data locally
-  const [tileMappings, setTileMappings] = React.useState<GardenTileMapping>(tileMapping);
-  const [tileTypes, setTileTypes] = React.useState<Record<string, GardenTileType>>(
+  const [goals, setGoals] = React.useState<Goals>({});
+  const [tileMappings, setTileMappings] = React.useState<GardenTilePositions>(tileMapping);
+  const [tileTypes, setTileTypes] = React.useState<GardenTileTypes>(
     // FIXME: Mock tile types
     {
       "rose": {
@@ -76,10 +77,11 @@ const Garden = ({tileMapping}: {tileMapping: GardenTileMapping}) => {
         id: newGoalId,
         title,
         expandedTitle,
+
         currentStage: 0,
-        daysWatered: 0,
-        daysToGrow: 3,
-        lastWatered: new Date().toISOString()
+        lastPosition: [position[0], position[1]],
+        lastWateredDay: new Date().getTime(),
+        totalDaysWatered: 0
       };
 
       const newTileType: GardenTileType = {
@@ -101,7 +103,7 @@ const Garden = ({tileMapping}: {tileMapping: GardenTileMapping}) => {
                 Title <input type="text" value={title} onChange={e => setTitle(e.target.value)} className='mt-1' />
               </label>
               <label className='flex flex-col items-center'>
-                Expanded title <textarea value={expandedTitle} onChange={e => setExpandedTitle(e.target.value)} className='mt-1' rows={2} />
+                Description <textarea value={expandedTitle} onChange={e => setExpandedTitle(e.target.value)} className='mt-1' rows={2} />
               </label>
             </div>
             <br />
@@ -116,6 +118,12 @@ const Garden = ({tileMapping}: {tileMapping: GardenTileMapping}) => {
   }
 
   function saveNewGoal(newGoal: FlowerGoal, newGoalType: GardenTileType, position: number[]) {
+    setGoals((prevGoals) => {
+      const newGoals = { ...prevGoals };
+      newGoals[newGoal.id] = newGoal;
+      return newGoals;
+    });
+    
     setGrid((prevGrid) => {
       const newGrid = [...prevGrid];
       newGrid[position[0]][position[1]] = newGoalType.id;
@@ -252,7 +260,7 @@ const Garden = ({tileMapping}: {tileMapping: GardenTileMapping}) => {
           gap: '1px',
           width: '100%',
           aspectRatio: '1/1',
-          maxWidth: '1000px',
+          maxWidth: '600px',
           margin: '0 auto',
         }}
       >
@@ -264,7 +272,8 @@ const Garden = ({tileMapping}: {tileMapping: GardenTileMapping}) => {
                   key={`${rowi}-${coli}`}
                   id={tileId || "ground"} //  null == "ground"
                   position={[rowi, coli]}
-                  icon={tileTypes[tileId ?? "ground"]?.icon ?? ""}
+                  goal={goals[tileId || "ground"]}
+                  type={tileTypes[tileId || "ground"]}
       
                   dragElementRef={dragElementRef}
                   handleTileDrag={handleTileDrag}
